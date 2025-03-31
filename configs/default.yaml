@@ -1,0 +1,41 @@
+model:
+  num_classes: 80
+  input_channels: 3
+  anchors: 3
+
+training:
+  epochs: 300
+  batch_size: 16
+  img_size: 640
+  optimizer: 'Adam'
+  learning_rate: 0.001
+  weight_decay: 0.0005
+  momentum: 0.937
+  warmup_epochs: 3
+  cos_lr: true
+
+augmentation:
+  hsv_h: 0.015  # HSV-Hue augmentation
+  hsv_s: 0.7    # HSV-Saturation augmentation
+  hsv_v: 0.4    # HSV-Value augmentation
+  degrees: 0.0   # Rotation
+  translate: 0.1  # Translation
+  scale: 0.5     # Scale
+  shear: 0.0     # Shear
+  perspective: 0.0  # Perspective
+  flipud: 0.0     # Vertical flip
+  fliplr: 0.5     # Horizontal flip
+  mosaic: 1.0     # Mosaic augmentation
+  mixup: 0.0      # Mixup augmentation
+
+detection:
+  conf_thres: 0.25  # Confidence threshold
+  iou_thres: 0.45   # NMS IoU threshold
+  max_det: 300      # Maximum detections per image
+  
+paths:
+  train: 'data/train'  # Path to training images
+  val: 'data/val'      # Path to validation images
+  weights: 'weights'   # Path to weights directory
+  
+device: 'cuda'  # Device to use (cuda/cpu)
