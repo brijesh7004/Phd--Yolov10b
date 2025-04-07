@@ -1,168 +1,114 @@
-# YOLOv10 Implementation
+# YOLOv10 Object Detection
 
-This is an implementation of YOLOv10 (You Only Look Once version 10) object detection model. The implementation includes model architecture, training utilities, and inference code.
+A streamlined implementation of the YOLOv10 model for object detection.
 
-## Project Structure
+## Features
 
-```
-yolov10/
-├── assets/           # Example images and test assets
-├── configs/          # Configuration files
-├── data/            # Dataset and data loading utilities
-├── models/          # Model architecture implementation
-├── utils/           # Utility functions and helpers
-├── weights/         # Model weights
-├── detect.py        # Object detection script
-├── test_model.py    # Model testing script
-├── train.py         # Training script
-├── validate.py      # Validation script
-└── README.md        # This file
-```
+- Multiple model variants (nano, small, base, medium, large, xlarge)
+- Simple detection interface
+- Variant-specific weight handling
+- Support for converting between model formats
 
-## Requirements
+## Model Variants
 
-- Python 3.8+
-- PyTorch 2.0+
-- OpenCV
-- NumPy
-- PyYAML
-- Ultralytics (for weight compatibility)
+YOLOv10 comes in several sizes to balance speed and accuracy:
+
+| Variant | Suffix | Size     | Description                        |
+|---------|--------|----------|------------------------------------|
+| Nano    | n      | Smallest | Ultra-fast, lower accuracy         |
+| Small   | s      | Small    | Fast, good accuracy                |
+| Base    | b      | Medium   | Balanced speed and accuracy        |
+| Medium  | m      | Medium+  | Better accuracy than Base          |
+| Large   | l      | Large    | High accuracy, slower              |
+| XLarge  | x      | Largest  | Highest accuracy, slowest          |
 
 ## Installation
 
-1. Clone this repository
-2. Create a virtual environment (recommended):
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # Linux/Mac
-   # OR
-   venv\Scripts\activate     # Windows
-   ```
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/yolov10-model.git
+cd yolov10-model
 
-3. Install dependencies:
-   ```bash
-   pip install torch torchvision opencv-python numpy pyyaml ultralytics
-   ```
+# Install dependencies
+pip install -r requirements.txt
+```
 
 ## Usage
 
-### Object Detection
-
-To run object detection on an image:
+### Running Detection
 
 ```bash
-python detect.py --weights weights/yolov10m.pt --img-path path/to/image.jpg
+# Run detection with default settings
+python detect.py --weights weights/yolov10b.pt --img-path images/example.jpg
+
+# Specify a different variant
+python detect.py --weights weights/yolov10s.pt --variant s --img-path images/example.jpg
+
+# Force loading weights even with variant mismatch
+python detect.py --weights weights/yolov10l.pt --variant b --force-load --img-path images/example.jpg
 ```
 
-Optional arguments:
-- `--output`: Path to save the output image
-- `--conf-thres`: Confidence threshold (default: from config)
-- `--iou-thres`: NMS IoU threshold (default: from config)
-- `--img-size`: Input image size (default: from config)
-- `--device`: Device to run on (cuda/cpu, default: from config)
-
-### Testing
-
-To run model tests:
+### Model Conversion
 
 ```bash
-python test_model.py
+# Convert a checkpoint to ONNX format
+python convert_model.py --weights weights/yolov10b.pt --format onnx
+
+# Convert a model to TorchScript
+python convert_model.py --weights weights/yolov10s.pt --variant s --format torchscript
 ```
 
-### Training
+### Training Variants
 
-To train the model:
+If you need to train YOLOv10 variants, you can use:
 
 ```bash
-python train.py
+# Train a base variant
+python train.py --variant b
+
+# Train using the train_variants script (multiple variants)
+python train_variants.py --variants n,s,b --mode train
+
+# Convert weights between variants
+python train_variants.py --variants n,s,b --mode convert --source-variant b --source-weights weights/YOLOv10b/best_model.pt
 ```
 
-### Validation
+## Directory Structure
 
-To validate the model:
-
-```bash
-python validate.py --weights weights/best_model.pt
+```
+yolov10/
+├── models/
+│   └── yolov10.py    # YOLOv10 model implementation
+├── utils/
+│   ├── credentials.py # Model configuration
+│   └── model_utils.py # Utility functions
+├── data/              # Dataset handling
+│   └── dataset.py     # Dataset implementation
+├── detect.py          # Detection script
+├── train.py           # Training script
+├── train_variants.py  # Multi-variant training
+└── convert_model.py   # Model conversion
 ```
 
-## Model Architecture
+## Troubleshooting
 
-The YOLOv10 model consists of:
+Common issues and solutions:
 
-1. **Backbone**:
-   - CSP (Cross Stage Partial) blocks
-   - Residual connections
-   - SPPF (Spatial Pyramid Pooling - Fast)
+### Variant Mismatch Errors
 
-2. **Detection Heads**:
-   - Multi-scale detection
-   - Three output scales for different object sizes
+If you encounter errors related to variant mismatches:
 
-3. **Features**:
-   - Enhanced feature extraction
-   - Improved small object detection
-   - Efficient architecture design
+1. Use the `--force-load` option to force weight loading
+2. Make sure the specified variant matches your weights file
 
-## Training Script (train.py)
+### Loading Detection Results
 
-The training script handles the complete training pipeline for YOLOv10. Key features:
+If your model loads but doesn't produce expected results:
 
-- Custom dataset loading
-- Multi-GPU support
-- Learning rate scheduling
-- Model checkpointing
-- Loss computation
-- Data augmentation
-
-### Usage
-```bash
-python train.py
-```
-
-### Configuration
-Training parameters can be configured in `utils/credentials.py` under `TRAIN_CONFIG`:
-- Batch size
-- Number of epochs
-- Learning rate
-- Weight decay
-- Momentum
-- Warmup epochs
-- Save interval
-
-## Validation Script (validate.py)
-
-The validation script evaluates model performance on the validation set. Features:
-
-- Precision/Recall calculation
-- Average Precision (AP) metrics
-- Confusion matrix generation
-- Results saving
-
-### Usage
-```bash
-python validate.py --weights weights/best_model.pt
-```
-
-### Configuration
-Validation parameters can be configured in `utils/credentials.py` under `MODEL_CONFIG`:
-- Confidence threshold
-- IoU threshold
-- Image size
-- Number of classes
-
-## Configuration
-
-Model and training parameters are configured in `utils/credentials.py`. Key configurations include:
-
-- Model parameters (number of classes, anchors, strides)
-- Training parameters (batch size, learning rate, etc.)
-- Data paths and directories
-- Detection thresholds
+1. Check that the correct class names are configured
+2. Verify that the model weights are for the specified variant
+3. Try with a smaller batch size if running out of memory
 
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Acknowledgments
-
-This implementation is inspired by the original YOLO series and incorporates modern deep learning practices for object detection.
